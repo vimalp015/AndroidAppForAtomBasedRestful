@@ -102,10 +102,12 @@ public class eSportDetailActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     Context context = v.getContext();
-                    Intent intent = new Intent(context, eSportDetailActivity.class);
-                    intent.putExtra(eSportDetailFragment.ARG_ITEM_ID, holder.mItem.getId());
-                    intent.putExtra(eSportDetailFragment.ARG_ITEM_TITLE, holder.mItem.getText());
-                    intent.putExtra(eSportDetailFragment.ARG_ITEM_HREF, holder.mItem.getIconURL());
+                    Intent intent = new Intent(context, eSportsDetailsDisplayActivity.class);
+                    intent.putExtra(eSportsDetailsDisplayActivity.ARG_ITEM_ID, holder.mItem.getId());
+                    intent.putExtra(eSportsDetailsDisplayActivity.ARG_TITLE, holder.mItem.getText());
+                    intent.putExtra(eSportsDetailsDisplayActivity.ARG_SUMMARY, holder.mItem.getSummary());
+                    intent.putExtra(eSportsDetailsDisplayActivity.ARG_RIGHTS, holder.mItem.getRights());
+                    intent.putExtra(eSportsDetailsDisplayActivity.ARG_ICON_URL, holder.mItem.getIconURL());
                     context.startActivity(intent);
                 }
             });

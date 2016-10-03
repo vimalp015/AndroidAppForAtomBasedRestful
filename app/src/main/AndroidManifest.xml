@@ -29,6 +29,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="in.lamiv.android.newsfeedfromatomservice.eSportListActivity" />
         </activity>
+        <activity android:name=".eSportsDetailsDisplayActivity"></activity>
     </application>
 
 </manifest>
