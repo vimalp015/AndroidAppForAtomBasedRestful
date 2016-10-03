@@ -147,10 +147,11 @@ public class eSportDetailActivity extends AppCompatActivity {
             try {
                 URL url = new URL(stringURL);
                 HttpURLConnection connect = (HttpURLConnection) url.openConnection();
-                responseCode = connect.getResponseCode();
+                connect.setRequestMethod("GET");
                 connect.setReadTimeout(10000);
                 connect.setConnectTimeout(15000);
                 connect.connect();
+                responseCode = connect.getResponseCode();
 
                 inputStream = connect.getInputStream();
                 items = new XMLPullParserHandler().parseDetailFeed(inputStream);

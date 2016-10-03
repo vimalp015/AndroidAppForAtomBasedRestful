@@ -152,10 +152,10 @@ public class eSportListActivity extends AppCompatActivity {
             try {
                 URL url = new URL(GlobalVars.ENTRY_URL);
                 HttpURLConnection connect = (HttpURLConnection) url.openConnection();
-                responseCode = connect.getResponseCode();
                 connect.setReadTimeout(10000);
                 connect.setConnectTimeout(15000);
                 connect.connect();
+                responseCode = connect.getResponseCode();
 
                 inputStream = connect.getInputStream();
                 items = new XMLPullParserHandler().parseIndexFeed(inputStream);

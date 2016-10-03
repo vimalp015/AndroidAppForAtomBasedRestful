@@ -10,7 +10,6 @@ public class DetailFeed {
 
     private String id;
     private String text;
-    private Date upated;
     private String summary;
     private String link;
     private String related;
@@ -32,14 +31,6 @@ public class DetailFeed {
 
     public void setText(String text) {
         this.text = text;
-    }
-
-    public Date getUpated() {
-        return upated;
-    }
-
-    public void setUpated(Date upated) {
-        this.upated = upated;
     }
 
     public String getSummary() {

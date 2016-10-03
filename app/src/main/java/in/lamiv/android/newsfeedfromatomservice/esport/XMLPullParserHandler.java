@@ -98,8 +98,6 @@ public class XMLPullParserHandler {
                             detailFeed.setId(text);
                         } else if (tagname.equalsIgnoreCase("title")) {
                             detailFeed.setText(text);
-                        } else if (tagname.equalsIgnoreCase("updated")) {
-                            detailFeed.setUpated(new SimpleDateFormat(GlobalVars.DATE_FORMAT, Locale.ENGLISH).parse(text));
                         } else if (tagname.equalsIgnoreCase("summary")) {
                             detailFeed.setSummary(text);
                         } else if (tagname.equalsIgnoreCase("link")) {
