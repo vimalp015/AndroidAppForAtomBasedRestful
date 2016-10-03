@@ -3,21 +3,22 @@ package in.lamiv.android.newsfeedfromatomservice;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 
+import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
 import in.lamiv.android.newsfeedfromatomservice.esport.XMLPullParserHandler;
 import in.lamiv.android.newsfeedfromatomservice.esport.eSportContent;
 
@@ -51,16 +52,17 @@ public class eSportListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+        if(eSportContent.ITEMS == null || eSportContent.ITEMS.size() == 0) {
+            new LoadeSportsAsyncTask().execute();
+        }
+        else {
+            View recyclerView = findViewById(R.id.esport_list);
+            assert recyclerView != null;
+            ((RecyclerView) recyclerView).setAdapter(new SimpleItemRecyclerViewAdapter(eSportContent.ITEMS));
+            if (findViewById(R.id.esport_detail_container) != null) {
+                mTwoPane = true;
             }
-        });
-
-         new LoadeSportsAsyncTask().execute();
+        }
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
@@ -86,7 +88,7 @@ public class eSportListActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
-            holder.mIdView.setText(mValues.get(position).id);
+//            holder.mIdView.setText(mValues.get(position).id);
             holder.mContentView.setText(mValues.get(position).title);
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -95,6 +97,8 @@ public class eSportListActivity extends AppCompatActivity {
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
                         arguments.putString(eSportDetailFragment.ARG_ITEM_ID, holder.mItem.id);
+                        arguments.putString(eSportDetailFragment.ARG_ITEM_TITLE, holder.mItem.title);
+                        arguments.putString(eSportDetailFragment.ARG_ITEM_HREF, holder.mItem.href);
                         eSportDetailFragment fragment = new eSportDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
@@ -104,7 +108,8 @@ public class eSportListActivity extends AppCompatActivity {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, eSportDetailActivity.class);
                         intent.putExtra(eSportDetailFragment.ARG_ITEM_ID, holder.mItem.id);
-
+                        intent.putExtra(eSportDetailFragment.ARG_ITEM_TITLE, holder.mItem.title);
+                        intent.putExtra(eSportDetailFragment.ARG_ITEM_HREF, holder.mItem.href);
                         context.startActivity(intent);
                     }
                 }
@@ -118,14 +123,14 @@ public class eSportListActivity extends AppCompatActivity {
 
         public class ViewHolder extends RecyclerView.ViewHolder {
             public final View mView;
-            public final TextView mIdView;
+//            public final TextView mIdView;
             public final TextView mContentView;
             public eSportContent.eSportItem mItem;
 
             public ViewHolder(View view) {
                 super(view);
                 mView = view;
-                mIdView = (TextView) view.findViewById(R.id.id);
+//                mIdView = (TextView) view.findViewById(R.id.id);
                 mContentView = (TextView) view.findViewById(R.id.content);
             }
 
@@ -140,13 +145,14 @@ public class eSportListActivity extends AppCompatActivity {
 
         InputStream inputStream;
         List<eSportContent.eSportItem> items;
+        int responseCode;
 
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                URL url = new URL("http://feed.esportsreader.com/reader/sports");
+                URL url = new URL(GlobalVars.ENTRY_URL);
                 HttpURLConnection connect = (HttpURLConnection) url.openConnection();
-                int responseCode = connect.getResponseCode();
+                responseCode = connect.getResponseCode();
                 connect.setReadTimeout(10000);
                 connect.setConnectTimeout(15000);
                 connect.connect();
@@ -162,13 +168,25 @@ public class eSportListActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            View recyclerView = findViewById(R.id.esport_list);
-            assert recyclerView != null;
+            if(responseCode != 200) {
+                new AlertDialog.Builder(eSportListActivity.this)
+                        .setTitle("eSport List")
+                        .setMessage("Server not reachable, please try later.")
+                        .setCancelable(false)
+                        .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        }).create().show();
+            }
+            else {
+                View recyclerView = findViewById(R.id.esport_list);
+                assert recyclerView != null;
 //            setupRecyclerView((RecyclerView) recyclerView);
-            ((RecyclerView) recyclerView).setAdapter(new SimpleItemRecyclerViewAdapter(items));
-
-            if (findViewById(R.id.esport_detail_container) != null) {
-                mTwoPane = true;
+                ((RecyclerView) recyclerView).setAdapter(new SimpleItemRecyclerViewAdapter(items));
+                if (findViewById(R.id.esport_detail_container) != null) {
+                    mTwoPane = true;
+                }
             }
         }
     }
