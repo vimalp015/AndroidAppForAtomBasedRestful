@@ -5,12 +5,8 @@ package in.lamiv.android.newsfeedfromatomservice.esport;
  */
 
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -21,6 +17,7 @@ public class XMLPullParserHandler {
     private IndexFeed eSport;
     private DetailFeed detailFeed;
 
+    //method to parse initial atom feed with list of all eSports and link to it
     public List<eSportContent.eSportItem> parseIndexFeed(InputStream is) {
         XmlPullParserFactory factory = null;
         XmlPullParser parser = null;
@@ -68,6 +65,7 @@ public class XMLPullParserHandler {
         return eSportContent.ITEMS;
     }
 
+    //method to parse atom feed on selected eSports detail
     public List<DetailFeed> parseDetailFeed(InputStream is) {
         XmlPullParserFactory factory = null;
         XmlPullParser parser = null;
@@ -113,6 +111,8 @@ public class XMLPullParserHandler {
                                 detailFeed.setIconURL(parser.getAttributeValue(null, "href"));
                         } else if (tagname.equalsIgnoreCase("rights")) {
                             detailFeed.setRights(text);
+                        } else if (tagname.equalsIgnoreCase("updated")) {
+                            detailFeed.setUpdated(Helpers.ParseDateFromFeed(text));
                         }
                         break;
                     default:

@@ -14,6 +14,7 @@ public class DetailFeed {
     private String link;
     private String related;
     private String iconURL;
+    private Date updated;
 
     private String rights;
 
@@ -73,6 +74,13 @@ public class DetailFeed {
         this.rights = rights;
     }
 
+    public Date getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(Date updated) {
+        this.updated = updated;
+    }
     @Override
     public String toString() {
         return "Detail feed item: { Id: " + id + ", Text: " + text +", Summary: " + summary + "}";
