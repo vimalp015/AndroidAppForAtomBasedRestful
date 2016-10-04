@@ -22,6 +22,7 @@
         android:id="@+id/esport_list"
         android:name="in.lamiv.android.newsfeedfromatomservice.eSportListFragment"
         android:layout_width="@dimen/item_width"
+        android:layout_marginTop="40dp"
         android:layout_height="match_parent"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"

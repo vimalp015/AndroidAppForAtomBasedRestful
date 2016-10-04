@@ -15,6 +15,7 @@ import java.util.Locale;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+
 public class XMLPullParserHandler {
 
     private IndexFeed eSport;
@@ -23,6 +24,7 @@ public class XMLPullParserHandler {
     public List<eSportContent.eSportItem> parseIndexFeed(InputStream is) {
         XmlPullParserFactory factory = null;
         XmlPullParser parser = null;
+        eSportContent.ITEMS = new ArrayList<eSportContent.eSportItem>();
 
         String text = null;
 

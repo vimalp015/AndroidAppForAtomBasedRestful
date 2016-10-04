@@ -150,8 +150,8 @@ public class eSportDetailActivity extends AppCompatActivity {
                 URL url = new URL(stringURL);
                 HttpURLConnection connect = (HttpURLConnection) url.openConnection();
                 connect.setRequestMethod("GET");
-                connect.setReadTimeout(10000);
-                connect.setConnectTimeout(15000);
+                connect.setReadTimeout(GlobalVars.HTTP_READ_TIMEOUT);
+                connect.setConnectTimeout(GlobalVars.HTTP_CONNECT_TIMEOUT);
                 connect.connect();
                 responseCode = connect.getResponseCode();
 
@@ -168,10 +168,10 @@ public class eSportDetailActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             if(responseCode != 200) {
                 new AlertDialog.Builder(eSportDetailActivity.this)
-                        .setTitle("eSport Details")
-                        .setMessage("Server not reachable, please try later.")
+                        .setTitle(GlobalVars.ALERT_TITLE)
+                        .setMessage(GlobalVars.ALERT_MESSAGE_SERVER_CON_ISSUE)
                         .setCancelable(false)
-                        .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                             }

@@ -65,8 +65,8 @@ public class eSportListActivity extends AppCompatActivity {
         }
     }
 
-    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(eSportContent.ITEMS));
+    public void refreshOnClick(View view) {
+        new LoadeSportsAsyncTask().execute();
     }
 
     public class SimpleItemRecyclerViewAdapter
@@ -152,8 +152,8 @@ public class eSportListActivity extends AppCompatActivity {
             try {
                 URL url = new URL(GlobalVars.ENTRY_URL);
                 HttpURLConnection connect = (HttpURLConnection) url.openConnection();
-                connect.setReadTimeout(10000);
-                connect.setConnectTimeout(15000);
+                connect.setReadTimeout(GlobalVars.HTTP_READ_TIMEOUT);
+                connect.setConnectTimeout(GlobalVars.HTTP_CONNECT_TIMEOUT);
                 connect.connect();
                 responseCode = connect.getResponseCode();
 
@@ -170,10 +170,10 @@ public class eSportListActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             if(responseCode != 200) {
                 new AlertDialog.Builder(eSportListActivity.this)
-                        .setTitle("eSport List")
-                        .setMessage("Server not reachable, please try later.")
+                        .setTitle(GlobalVars.ALERT_TITLE)
+                        .setMessage(GlobalVars.ALERT_MESSAGE_SERVER_CON_ISSUE)
                         .setCancelable(false)
-                        .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                             }
@@ -182,7 +182,6 @@ public class eSportListActivity extends AppCompatActivity {
             else {
                 View recyclerView = findViewById(R.id.esport_list);
                 assert recyclerView != null;
-//            setupRecyclerView((RecyclerView) recyclerView);
                 ((RecyclerView) recyclerView).setAdapter(new SimpleItemRecyclerViewAdapter(items));
                 if (findViewById(R.id.esport_detail_container) != null) {
                     mTwoPane = true;
