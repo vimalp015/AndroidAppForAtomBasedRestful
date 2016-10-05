@@ -8,6 +8,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
+import in.lamiv.android.newsfeedfromatomservice.esport.IndexFeed;
+
 /**
  * A fragment representing a single eSport detail screen.
  * This fragment is either contained in a {@link eSportListActivity}
@@ -16,11 +19,6 @@ import android.view.ViewGroup;
  */
 public class eSportDetailFragment extends Fragment {
 
-    //Keys used to pass values that is required by this UI
-    public static final String ARG_ITEM_ID = "item_id";
-    public static final String ARG_ITEM_TITLE = "item_title";
-    public static final String ARG_ITEM_HREF = "item_href";
-
     public eSportDetailFragment() {
     }
 
@@ -28,12 +26,12 @@ public class eSportDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-
+        if (getArguments().containsKey(GlobalVars.ARG_INDEX_FEED)) {
+            IndexFeed indexFeed = (IndexFeed)getArguments().getParcelable(GlobalVars.ARG_INDEX_FEED);
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
-                appBarLayout.setTitle(getArguments().get(ARG_ITEM_TITLE).toString());
+                appBarLayout.setTitle(GlobalVars.SOURCES_LIST +": " + indexFeed.getTitle());
             }
         }
     }

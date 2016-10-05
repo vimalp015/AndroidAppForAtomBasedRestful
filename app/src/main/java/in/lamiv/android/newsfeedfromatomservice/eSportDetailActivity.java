@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
@@ -29,6 +28,7 @@ import cz.msebera.android.httpclient.Header;
 
 import in.lamiv.android.newsfeedfromatomservice.esport.DetailFeed;
 import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
+import in.lamiv.android.newsfeedfromatomservice.esport.IndexFeed;
 import in.lamiv.android.newsfeedfromatomservice.esport.XMLPullParserHandler;
 import in.lamiv.android.newsfeedfromatomservice.esport.eSportContent;
 
@@ -43,9 +43,7 @@ public class eSportDetailActivity extends AppCompatActivity {
     // Progress Dialog Object
     ProgressDialog prgDialog;
     //var to hold values passed from eSports list on selection
-    String _eSportId;
-    String _title;
-    String _href;
+    IndexFeed _indexFeed = new IndexFeed();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,18 +65,20 @@ public class eSportDetailActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        _eSportId = getIntent().getStringExtra(eSportDetailFragment.ARG_ITEM_ID);
-        _title = getIntent().getStringExtra(eSportDetailFragment.ARG_ITEM_TITLE);
-        _href = getIntent().getStringExtra(eSportDetailFragment.ARG_ITEM_HREF);
+
+        Bundle data = getIntent().getExtras();
+        if(data.containsKey(GlobalVars.ARG_INDEX_FEED)) {
+            _indexFeed = (IndexFeed) data.getParcelable(GlobalVars.ARG_INDEX_FEED);
+        }
+
+        this.setTitle(GlobalVars.SOURCES_LIST +": " + _indexFeed.getTitle());
 
         if (savedInstanceState == null) {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction. You need the below params to fetch feed with the ID
             //and to display title on the screen
             Bundle arguments = new Bundle();
-            arguments.putString(eSportDetailFragment.ARG_ITEM_ID, _eSportId);
-            arguments.putString(eSportDetailFragment.ARG_ITEM_TITLE, _title);
-            arguments.putString(eSportDetailFragment.ARG_ITEM_HREF, _href);
+            arguments.putParcelable(GlobalVars.ARG_INDEX_FEED, _indexFeed);
             eSportDetailFragment fragment = new eSportDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
@@ -87,8 +87,9 @@ public class eSportDetailActivity extends AppCompatActivity {
         }
 
         //verify if the eSport details to be fetched is already in our static object
-        if(eSportContent.HASH.containsKey(_eSportId) && eSportContent.HASH.get(_eSportId).details != null) {
-            InputStream inputStream = new ByteArrayInputStream(eSportContent.HASH.get(_eSportId).details);
+        if(eSportContent.HASH.containsKey(_indexFeed.getId())
+                && eSportContent.HASH.get(_indexFeed.getId()).details != null) {
+            InputStream inputStream = new ByteArrayInputStream(eSportContent.HASH.get(_indexFeed.getId()).details);
             List<DetailFeed> items = new XMLPullParserHandler().parseDetailFeed(inputStream);
             View recyclerView = findViewById(R.id.esport_list);
             assert recyclerView != null;
@@ -135,11 +136,7 @@ public class eSportDetailActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     Context context = v.getContext();
                     Intent intent = new Intent(context, eSportsDetailsDisplayActivity.class);
-                    intent.putExtra(eSportsDetailsDisplayActivity.ARG_ITEM_ID, holder.mItem.getId());
-                    intent.putExtra(eSportsDetailsDisplayActivity.ARG_TITLE, holder.mItem.getText());
-                    intent.putExtra(eSportsDetailsDisplayActivity.ARG_SUMMARY, holder.mItem.getSummary());
-                    intent.putExtra(eSportsDetailsDisplayActivity.ARG_RIGHTS, holder.mItem.getRights());
-                    intent.putExtra(eSportsDetailsDisplayActivity.ARG_ICON_URL, holder.mItem.getIconURL());
+                    intent.putExtra(GlobalVars.ARG_DETAILS_FEED, holder.mItem);
                     context.startActivity(intent);
                 }
             });
@@ -174,7 +171,7 @@ public class eSportDetailActivity extends AppCompatActivity {
     public void invokeWS() {
         // Show Progress Dialog
         prgDialog.show();
-        String stringURL = _href;
+        String stringURL = _indexFeed.getHref();
 
         // Make RESTful webservice call using AsyncHttpClient object
         AsyncHttpClient client = new AsyncHttpClient();
@@ -196,7 +193,8 @@ public class eSportDetailActivity extends AppCompatActivity {
                 // Hide Progress Dialog
                 prgDialog.hide();
                 //add the result to our static object for any further access
-                eSportContent.addItem(new eSportContent.eSportItem(_eSportId, _title, _href, responseBody));
+                eSportContent.addItem(new eSportContent.eSportItem(_indexFeed.getId(), _indexFeed.getTitle(),
+                        _indexFeed.getHref(), responseBody));
             }
 
             @Override

@@ -22,6 +22,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import cz.msebera.android.httpclient.Header;
 
 import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
+import in.lamiv.android.newsfeedfromatomservice.esport.IndexFeed;
 import in.lamiv.android.newsfeedfromatomservice.esport.XMLPullParserHandler;
 import in.lamiv.android.newsfeedfromatomservice.esport.eSportContent;
 
@@ -56,6 +57,7 @@ public class eSportListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
+        this.setTitle(GlobalVars.ESPORTS_LIST);
 
         // Instantiate Progress Dialog object
         prgDialog = new ProgressDialog(this);
@@ -102,15 +104,17 @@ public class eSportListActivity extends AppCompatActivity {
             holder.mItem = mValues.get(position);
 //            holder.mIdView.setText(mValues.get(position).id);
             holder.mContentView.setText(mValues.get(position).title);
+            final IndexFeed indexFeed = new IndexFeed();
+            indexFeed.setId(holder.mItem.id);
+            indexFeed.setTitle(holder.mItem.title);
+            indexFeed.setHref(holder.mItem.href);
 
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
-                        arguments.putString(eSportDetailFragment.ARG_ITEM_ID, holder.mItem.id);
-                        arguments.putString(eSportDetailFragment.ARG_ITEM_TITLE, holder.mItem.title);
-                        arguments.putString(eSportDetailFragment.ARG_ITEM_HREF, holder.mItem.href);
+                        arguments.putParcelable(GlobalVars.ARG_INDEX_FEED, indexFeed);
                         eSportDetailFragment fragment = new eSportDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
@@ -119,9 +123,7 @@ public class eSportListActivity extends AppCompatActivity {
                     } else {
                         Context context = v.getContext();
                         Intent intent = new Intent(context, eSportDetailActivity.class);
-                        intent.putExtra(eSportDetailFragment.ARG_ITEM_ID, holder.mItem.id);
-                        intent.putExtra(eSportDetailFragment.ARG_ITEM_TITLE, holder.mItem.title);
-                        intent.putExtra(eSportDetailFragment.ARG_ITEM_HREF, holder.mItem.href);
+                        intent.putExtra(GlobalVars.ARG_INDEX_FEED, indexFeed);
                         context.startActivity(intent);
                     }
                 }

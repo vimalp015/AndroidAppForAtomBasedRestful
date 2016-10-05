@@ -28,4 +28,10 @@ public class Helpers {
         }
         return date;
     }
+
+    //Parse a date to string for parcelable object
+    public static String ParseDateToString(Date date) {
+        DateFormat format = new SimpleDateFormat(GlobalVars.DATE_FORMAT_FEED, Locale.ENGLISH);
+        return format.format(date);
+    }
 }

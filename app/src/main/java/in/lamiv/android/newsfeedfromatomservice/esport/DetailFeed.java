@@ -4,9 +4,16 @@ package in.lamiv.android.newsfeedfromatomservice.esport;
  * This class will be used for de-serializing details feed for an eSport
  */
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.Date;
 
-public class DetailFeed {
+public class DetailFeed implements Parcelable {
+
+    public DetailFeed() {
+
+    }
 
     private String id;
     private String text;
@@ -15,7 +22,6 @@ public class DetailFeed {
     private String related;
     private String iconURL;
     private Date updated;
-
     private String rights;
 
     public String getId() {
@@ -85,5 +91,53 @@ public class DetailFeed {
     public String toString() {
         return "Detail feed item: { Id: " + id + ", Text: " + text +", Summary: " + summary + "}";
     }
+
+    //implementation for parcelable
+    //{
+
+    public DetailFeed(Parcel in){
+        String[] data = new String[3];
+
+        in.readStringArray(data);
+        this.id = data[0];
+        this.text = data[1];
+        this.summary = data[2];
+        this.link = data[3];
+        this.related = data[4];
+        this.iconURL = data[5];
+        this.updated = Helpers.ParseDateFromFeed(data[6]);
+        this.rights = data[7];
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeStringArray(new String[] {
+                this.id,
+                this.text,
+                this.summary,
+                this.link,
+                this.related,
+                this.iconURL,
+                Helpers.ParseDateToString(this.updated),
+                this.rights
+        });
+    }
+
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public IndexFeed createFromParcel(Parcel in) {
+            return new IndexFeed(in);
+        }
+
+        public IndexFeed[] newArray(int size) {
+            return new IndexFeed[size];
+        }
+    };
+
+    //}
 }
 
