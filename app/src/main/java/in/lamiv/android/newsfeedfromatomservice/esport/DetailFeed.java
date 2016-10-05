@@ -12,7 +12,6 @@ import java.util.Date;
 public class DetailFeed implements Parcelable {
 
     public DetailFeed() {
-
     }
 
     private String id;
@@ -96,7 +95,7 @@ public class DetailFeed implements Parcelable {
     //{
 
     public DetailFeed(Parcel in){
-        String[] data = new String[3];
+        String[] data = new String[8];
 
         in.readStringArray(data);
         this.id = data[0];
@@ -105,8 +104,8 @@ public class DetailFeed implements Parcelable {
         this.link = data[3];
         this.related = data[4];
         this.iconURL = data[5];
-        this.updated = Helpers.ParseDateFromFeed(data[6]);
-        this.rights = data[7];
+        this.rights = data[6];
+        this.updated = Helpers.ParseDateFromFeed(data[7]);
     }
 
     @Override
@@ -123,18 +122,18 @@ public class DetailFeed implements Parcelable {
                 this.link,
                 this.related,
                 this.iconURL,
+                this.rights,
                 Helpers.ParseDateToString(this.updated),
-                this.rights
         });
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
-        public IndexFeed createFromParcel(Parcel in) {
-            return new IndexFeed(in);
+        public DetailFeed createFromParcel(Parcel in) {
+            return new DetailFeed(in);
         }
 
-        public IndexFeed[] newArray(int size) {
-            return new IndexFeed[size];
+        public DetailFeed[] newArray(int size) {
+            return new DetailFeed[size];
         }
     };
 

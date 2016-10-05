@@ -11,7 +11,6 @@ import android.os.Parcelable;
 public class IndexFeed implements Parcelable{
 
     public IndexFeed() {
-
     }
 
     private String id;

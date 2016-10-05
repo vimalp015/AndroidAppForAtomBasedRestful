@@ -24,14 +24,14 @@ public class eSportsDetailsDisplayActivity extends AppCompatActivity {
 
         Bundle data = getIntent().getExtras();
         if(data.containsKey(GlobalVars.ARG_DETAILS_FEED)) {
-            _detailFeed = (DetailFeed) data.getParcelable("GlobalVars.ARG_DETAILS_FEED");
+            _detailFeed = (DetailFeed) data.getParcelable(GlobalVars.ARG_DETAILS_FEED);
         }
 
         //set the title of the screen to the eSport title selected from the list
         setTitle(GlobalVars.ENTRIES + ": " + _detailFeed.getText());
 
         //set values to the controls to be displayed for the user
-        ((TextView)findViewById(R.id.details_text)).setText(getIntent().getStringExtra(_detailFeed.getText()));
+        ((TextView)findViewById(R.id.details_text)).setText(_detailFeed.getText());
         ((TextView)findViewById(R.id.details_summary)).setText(_detailFeed.getSummary());
         ((TextView)findViewById(R.id.details_rights)).setText(_detailFeed.getRights());
 
