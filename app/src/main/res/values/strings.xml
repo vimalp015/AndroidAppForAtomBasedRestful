@@ -2,4 +2,9 @@
     <string name="app_name">eSports Reader</string>
     <string name="title_esport_detail">eSport Detail</string>
     <string name="refresh">Refresh</string>
+    <string name="title">Title:</string>
+    <string name="summary">Summary:</string>
+    <string name="rights">Rights:</string>
+    <string name="updated">Updated:</string>
+    <string name="url_link">URL Link:</string>
 </resources>

@@ -13,6 +13,7 @@ import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.HttpEntity;
 import in.lamiv.android.newsfeedfromatomservice.esport.DetailFeed;
 import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
+import in.lamiv.android.newsfeedfromatomservice.esport.Helpers;
 
 public class eSportsDetailsDisplayActivity extends AppCompatActivity {
 
@@ -34,6 +35,8 @@ public class eSportsDetailsDisplayActivity extends AppCompatActivity {
         ((TextView)findViewById(R.id.details_text)).setText(_detailFeed.getText());
         ((TextView)findViewById(R.id.details_summary)).setText(_detailFeed.getSummary());
         ((TextView)findViewById(R.id.details_rights)).setText(_detailFeed.getRights());
+        ((TextView)findViewById(R.id.details_updated)).setText(Helpers.ParseDateToStringForDisplay
+                (_detailFeed.getUpdated()));
 
         if(_detailFeed.getIconURL() != null) {
             getImage();
@@ -53,7 +56,7 @@ public class eSportsDetailsDisplayActivity extends AppCompatActivity {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 try {
-                    ((ImageView) findViewById(R.id.imageView1))
+                    ((ImageView) findViewById(R.id.imageViewIcon))
                             .setImageBitmap(BitmapFactory.decodeByteArray(responseBody, 0, responseBody.length));
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -34,4 +34,11 @@ public class Helpers {
         DateFormat format = new SimpleDateFormat(GlobalVars.DATE_FORMAT_FEED, Locale.ENGLISH);
         return format.format(date);
     }
+
+    //Parse a date to string for display
+    public static String ParseDateToStringForDisplay(Date date) {
+        DateFormat format = new SimpleDateFormat(GlobalVars.DATE_FORMAT_DISPLAY, Locale.ENGLISH);
+        return format.format(date);
+    }
+
 }
