@@ -1,5 +1,6 @@
 package in.lamiv.android.newsfeedfromatomservice;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,14 +17,20 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+
+import cz.msebera.android.httpclient.Header;
 import in.lamiv.android.newsfeedfromatomservice.esport.DetailFeed;
 import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
 import in.lamiv.android.newsfeedfromatomservice.esport.XMLPullParserHandler;
+import in.lamiv.android.newsfeedfromatomservice.esport.eSportContent;
 
 /**
  * An activity representing a single eSport detail screen. This
@@ -33,12 +40,22 @@ import in.lamiv.android.newsfeedfromatomservice.esport.XMLPullParserHandler;
  */
 public class eSportDetailActivity extends AppCompatActivity {
 
+    // Progress Dialog Object
+    ProgressDialog prgDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_esport_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         setSupportActionBar(toolbar);
+
+        // Instantiate Progress Dialog object
+        prgDialog = new ProgressDialog(this);
+        // Set Progress Dialog Text
+        prgDialog.setMessage(GlobalVars.PLEASE_WAIT_MESSAGE);
+        // Set Cancelable as False
+        prgDialog.setCancelable(false);
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
@@ -63,7 +80,7 @@ public class eSportDetailActivity extends AppCompatActivity {
                     .commit();
         }
 
-        new LoadeSportsAsyncTask().execute();
+        invokeWS();
     }
 
     @Override
@@ -135,35 +152,40 @@ public class eSportDetailActivity extends AppCompatActivity {
         }
     }
 
-    private class LoadeSportsAsyncTask extends AsyncTask<Void,Void,Void> {
-
-        InputStream inputStream;
-        List<DetailFeed> items;
+    /**
+     * Method that performs RESTful webservice invocations
+     */
+    public void invokeWS() {
+        // Show Progress Dialog
+        prgDialog.show();
         String stringURL = getIntent().getStringExtra(eSportDetailFragment.ARG_ITEM_HREF);
-        int responseCode;
-        @Override
-        protected Void doInBackground(Void... params) {
-            try {
-                URL url = new URL(stringURL);
-                HttpURLConnection connect = (HttpURLConnection) url.openConnection();
-                connect.setRequestMethod("GET");
-                connect.setReadTimeout(GlobalVars.HTTP_READ_TIMEOUT);
-                connect.setConnectTimeout(GlobalVars.HTTP_CONNECT_TIMEOUT);
-                connect.connect();
-                responseCode = connect.getResponseCode();
 
-                inputStream = connect.getInputStream();
-                items = new XMLPullParserHandler().parseDetailFeed(inputStream);
-                inputStream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
+        // Make RESTful webservice call using AsyncHttpClient object
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(stringURL, new AsyncHttpResponseHandler() {
+            List<DetailFeed> items;
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                try {
+                    InputStream inputStream = new ByteArrayInputStream(responseBody);
+                    items = new XMLPullParserHandler().parseDetailFeed(inputStream);
+                    inputStream.close();
+
+                    View recyclerView = findViewById(R.id.esport_list);
+                    assert recyclerView != null;
+                    ((RecyclerView) recyclerView).setAdapter(new eSportDetailActivity.SimpleItemRecyclerViewAdapter(items));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                // Hide Progress Dialog
+                prgDialog.hide();
             }
-            return null;
-        }
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            if(responseCode != 200) {
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                // Hide Progress Dialog
+                prgDialog.hide();
                 new AlertDialog.Builder(eSportDetailActivity.this)
                         .setTitle(GlobalVars.ALERT_TITLE)
                         .setMessage(GlobalVars.ALERT_MESSAGE_SERVER_CON_ISSUE)
@@ -174,12 +196,7 @@ public class eSportDetailActivity extends AppCompatActivity {
                             }
                         }).create().show();
             }
-            else {
-                View recyclerView = findViewById(R.id.esport_list);
-                assert recyclerView != null;
-                ((RecyclerView) recyclerView).setAdapter(new eSportDetailActivity.SimpleItemRecyclerViewAdapter(items));
-            }
-        }
+        });
     }
-
+    
 }

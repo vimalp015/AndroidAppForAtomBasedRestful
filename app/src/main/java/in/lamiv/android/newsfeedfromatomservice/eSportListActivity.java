@@ -1,11 +1,9 @@
 package in.lamiv.android.newsfeedfromatomservice;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -17,14 +15,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 
+
+import cz.msebera.android.httpclient.Header;
 import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
 import in.lamiv.android.newsfeedfromatomservice.esport.XMLPullParserHandler;
 import in.lamiv.android.newsfeedfromatomservice.esport.eSportContent;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
 
 /**
@@ -43,6 +44,9 @@ public class eSportListActivity extends AppCompatActivity {
      */
     private boolean mTwoPane;
 
+    // Progress Dialog Object
+    ProgressDialog prgDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,10 +56,16 @@ public class eSportListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
-        if(eSportContent.ITEMS == null || eSportContent.ITEMS.size() == 0) {
-            new LoadeSportsAsyncTask().execute();
-        }
-        else {
+        // Instantiate Progress Dialog object
+        prgDialog = new ProgressDialog(this);
+        // Set Progress Dialog Text
+        prgDialog.setMessage(GlobalVars.PLEASE_WAIT_MESSAGE);
+        // Set Cancelable as False
+        prgDialog.setCancelable(false);
+
+        if (eSportContent.ITEMS == null || eSportContent.ITEMS.size() == 0) {
+            invokeWS();
+        } else {
             View recyclerView = findViewById(R.id.esport_list);
             assert recyclerView != null;
             ((RecyclerView) recyclerView).setAdapter(new SimpleItemRecyclerViewAdapter(eSportContent.ITEMS));
@@ -65,8 +75,56 @@ public class eSportListActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Method that performs RESTful webservice invocations
+     */
+    public void invokeWS() {
+        // Show Progress Dialog
+        prgDialog.show();
+        // Make RESTful webservice call using AsyncHttpClient object
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(GlobalVars.ENTRY_URL, new AsyncHttpResponseHandler() {
+
+            List<eSportContent.eSportItem> items;
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                try {
+                    InputStream inputStream = new ByteArrayInputStream(responseBody);
+                    items = new XMLPullParserHandler().parseIndexFeed(inputStream);
+                    inputStream.close();
+                    View recyclerView = findViewById(R.id.esport_list);
+                    assert recyclerView != null;
+                    ((RecyclerView) recyclerView).setAdapter(new SimpleItemRecyclerViewAdapter(items));
+                    if (findViewById(R.id.esport_detail_container) != null) {
+                        mTwoPane = true;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                // Hide Progress Dialog
+                prgDialog.hide();
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                // Hide Progress Dialog
+                prgDialog.hide();
+                new AlertDialog.Builder(eSportListActivity.this)
+                        .setTitle(GlobalVars.ALERT_TITLE)
+                        .setMessage(GlobalVars.ALERT_MESSAGE_SERVER_CON_ISSUE)
+                        .setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        }).create().show();
+            }
+        });
+    }
+
     public void refreshOnClick(View view) {
-        new LoadeSportsAsyncTask().execute();
+        invokeWS();
     }
 
     public class SimpleItemRecyclerViewAdapter
@@ -123,7 +181,7 @@ public class eSportListActivity extends AppCompatActivity {
 
         public class ViewHolder extends RecyclerView.ViewHolder {
             public final View mView;
-//            public final TextView mIdView;
+            //            public final TextView mIdView;
             public final TextView mContentView;
             public eSportContent.eSportItem mItem;
 
@@ -141,52 +199,4 @@ public class eSportListActivity extends AppCompatActivity {
         }
     }
 
-    private class LoadeSportsAsyncTask extends AsyncTask<Void,Void,Void>{
-
-        InputStream inputStream;
-        List<eSportContent.eSportItem> items;
-        int responseCode;
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            try {
-                URL url = new URL(GlobalVars.ENTRY_URL);
-                HttpURLConnection connect = (HttpURLConnection) url.openConnection();
-                connect.setReadTimeout(GlobalVars.HTTP_READ_TIMEOUT);
-                connect.setConnectTimeout(GlobalVars.HTTP_CONNECT_TIMEOUT);
-                connect.connect();
-                responseCode = connect.getResponseCode();
-
-                inputStream = connect.getInputStream();
-                items = new XMLPullParserHandler().parseIndexFeed(inputStream);
-                inputStream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            if(responseCode != 200) {
-                new AlertDialog.Builder(eSportListActivity.this)
-                        .setTitle(GlobalVars.ALERT_TITLE)
-                        .setMessage(GlobalVars.ALERT_MESSAGE_SERVER_CON_ISSUE)
-                        .setCancelable(false)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                            }
-                        }).create().show();
-            }
-            else {
-                View recyclerView = findViewById(R.id.esport_list);
-                assert recyclerView != null;
-                ((RecyclerView) recyclerView).setAdapter(new SimpleItemRecyclerViewAdapter(items));
-                if (findViewById(R.id.esport_detail_container) != null) {
-                    mTwoPane = true;
-                }
-            }
-        }
-    }
 }
