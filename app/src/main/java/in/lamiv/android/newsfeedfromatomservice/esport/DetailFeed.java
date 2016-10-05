@@ -1,10 +1,10 @@
 package in.lamiv.android.newsfeedfromatomservice.esport;
-
-import java.util.Date;
-
 /**
  * Created by vimal on 10/3/2016.
+ * This class will be used for de-serializing details feed for an eSport
  */
+
+import java.util.Date;
 
 public class DetailFeed {
 

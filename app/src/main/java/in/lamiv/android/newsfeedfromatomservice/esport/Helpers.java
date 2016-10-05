@@ -10,15 +10,17 @@ import java.util.TimeZone;
 
 /**
  * Created by vimal on 10/5/2016.
+ * will have static methods that could be invoked application wide
  */
 
 public class Helpers {
 
+    //Parse the date we receive from the feed and convert to Sydney/Melbourne time
     public static Date ParseDateFromFeed(String dateString) {
         Date date = null;
         try {
             DateFormat format = new SimpleDateFormat(GlobalVars.DATE_FORMAT_FEED, Locale.ENGLISH);
-            format.setTimeZone(TimeZone.getTimeZone("Australia/Sydney"));
+            format.setTimeZone(TimeZone.getTimeZone(GlobalVars.TIME_ZONE));
             date = format.parse(dateString);
         }
         catch (Exception e) {

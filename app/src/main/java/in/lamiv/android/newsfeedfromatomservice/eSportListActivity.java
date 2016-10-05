@@ -15,11 +15,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+//Android Asynchronous Http Client – An asynchronous callback-based Http client
+// for Android built on top of Apache’s HttpClient libraries which is used by Pinterest, Instagram etc.,
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-
-
 import cz.msebera.android.httpclient.Header;
+
 import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
 import in.lamiv.android.newsfeedfromatomservice.esport.XMLPullParserHandler;
 import in.lamiv.android.newsfeedfromatomservice.esport.eSportContent;
@@ -63,6 +64,7 @@ public class eSportListActivity extends AppCompatActivity {
         // Set Cancelable as False
         prgDialog.setCancelable(false);
 
+        //invoke feed request only if the required item is missing from our static object
         if (eSportContent.ITEMS == null || eSportContent.ITEMS.size() == 0) {
             invokeWS();
         } else {
@@ -73,54 +75,6 @@ public class eSportListActivity extends AppCompatActivity {
                 mTwoPane = true;
             }
         }
-    }
-
-    /**
-     * Method that performs RESTful webservice invocations
-     */
-    public void invokeWS() {
-        // Show Progress Dialog
-        prgDialog.show();
-        // Make RESTful webservice call using AsyncHttpClient object
-        AsyncHttpClient client = new AsyncHttpClient();
-        client.get(GlobalVars.ENTRY_URL, new AsyncHttpResponseHandler() {
-
-            List<eSportContent.eSportItem> items;
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                try {
-                    InputStream inputStream = new ByteArrayInputStream(responseBody);
-                    items = new XMLPullParserHandler().parseIndexFeed(inputStream);
-                    inputStream.close();
-                    View recyclerView = findViewById(R.id.esport_list);
-                    assert recyclerView != null;
-                    ((RecyclerView) recyclerView).setAdapter(new SimpleItemRecyclerViewAdapter(items));
-                    if (findViewById(R.id.esport_detail_container) != null) {
-                        mTwoPane = true;
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                // Hide Progress Dialog
-                prgDialog.hide();
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                // Hide Progress Dialog
-                prgDialog.hide();
-                new AlertDialog.Builder(eSportListActivity.this)
-                        .setTitle(GlobalVars.ALERT_TITLE)
-                        .setMessage(GlobalVars.ALERT_MESSAGE_SERVER_CON_ISSUE)
-                        .setCancelable(false)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                            }
-                        }).create().show();
-            }
-        });
     }
 
     public void refreshOnClick(View view) {
@@ -199,4 +153,53 @@ public class eSportListActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Method that performs RESTful webservice invocations
+     */
+    public void invokeWS() {
+        // Show Progress Dialog
+        prgDialog.show();
+        // Make RESTful webservice call using AsyncHttpClient object
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(GlobalVars.ENTRY_URL, new AsyncHttpResponseHandler() {
+
+            List<eSportContent.eSportItem> items;
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                try {
+                    InputStream inputStream = new ByteArrayInputStream(responseBody);
+                    items = new XMLPullParserHandler().parseIndexFeed(inputStream);
+                    eSportContent.addItems(items);
+                    inputStream.close();
+                    View recyclerView = findViewById(R.id.esport_list);
+                    assert recyclerView != null;
+                    ((RecyclerView) recyclerView).setAdapter(new SimpleItemRecyclerViewAdapter(items));
+                    if (findViewById(R.id.esport_detail_container) != null) {
+                        mTwoPane = true;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                // Hide Progress Dialog
+                prgDialog.hide();
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                // Hide Progress Dialog
+                prgDialog.hide();
+                //show an alert to the user about the request failure
+                new AlertDialog.Builder(eSportListActivity.this)
+                        .setTitle(GlobalVars.ALERT_TITLE)
+                        .setMessage(GlobalVars.ALERT_MESSAGE_SERVER_CON_ISSUE)
+                        .setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        }).create().show();
+            }
+        });
+    }
 }

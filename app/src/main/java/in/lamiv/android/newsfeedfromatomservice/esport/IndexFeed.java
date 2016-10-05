@@ -2,6 +2,7 @@ package in.lamiv.android.newsfeedfromatomservice.esport;
 
 /**
  * Created by vimal on 10/3/2016.
+ * This class will be used for de-serializing list of eSports we receive with initial entry
  */
 
 public class IndexFeed {

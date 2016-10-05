@@ -2,6 +2,7 @@ package in.lamiv.android.newsfeedfromatomservice.esport;
 
 /**
  * Created by vimal on 10/3/2016.
+ * This will contain all the parser methods required to parse the feeds
  */
 
 import java.io.InputStream;
@@ -47,7 +48,7 @@ public class XMLPullParserHandler {
                     case XmlPullParser.END_TAG:
                         if(tagname.equalsIgnoreCase("collection")) {
                             eSportContent.ITEMS.add(new eSportContent.eSportItem
-                                    (eSport.getId(),eSport.getTitle(),eSport.getHref()));
+                                    (eSport.getId(),eSport.getTitle(),eSport.getHref(), null));
                         } else if (tagname.equalsIgnoreCase("id")) {
                             eSport.setId(text);
                         } else if (tagname.equalsIgnoreCase("title")) {
@@ -101,13 +102,11 @@ public class XMLPullParserHandler {
                         } else if (tagname.equalsIgnoreCase("summary")) {
                             detailFeed.setSummary(text);
                         } else if (tagname.equalsIgnoreCase("link")) {
-                            if(parser.getAttributeValue(null, "via") != null)
+                            if(parser.getAttributeValue(null, "rel").equalsIgnoreCase("via"))
                                 detailFeed.setLink(parser.getAttributeValue(null, "href"));
-                        } else if (tagname.equalsIgnoreCase("link")) {
-                            if(parser.getAttributeValue(null, "related") != null)
+                            else if(parser.getAttributeValue(null, "rel").equalsIgnoreCase("related"))
                                 detailFeed.setRelated(parser.getAttributeValue(null, "href"));
-                        }else if (tagname.equalsIgnoreCase("link")) {
-                            if(parser.getAttributeValue(null, "icon") != null)
+                            else if(parser.getAttributeValue(null, "rel").equalsIgnoreCase("icon"))
                                 detailFeed.setIconURL(parser.getAttributeValue(null, "href"));
                         } else if (tagname.equalsIgnoreCase("rights")) {
                             detailFeed.setRights(text);

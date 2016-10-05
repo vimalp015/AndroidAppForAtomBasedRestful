@@ -16,6 +16,7 @@ import android.view.ViewGroup;
  */
 public class eSportDetailFragment extends Fragment {
 
+    //Keys used to pass values that is required by this UI
     public static final String ARG_ITEM_ID = "item_id";
     public static final String ARG_ITEM_TITLE = "item_title";
     public static final String ARG_ITEM_HREF = "item_href";
