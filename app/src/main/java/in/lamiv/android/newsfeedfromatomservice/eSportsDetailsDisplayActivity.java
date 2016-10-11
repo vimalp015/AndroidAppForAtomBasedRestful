@@ -14,10 +14,13 @@ import cz.msebera.android.httpclient.HttpEntity;
 import in.lamiv.android.newsfeedfromatomservice.esport.DetailFeed;
 import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
 import in.lamiv.android.newsfeedfromatomservice.esport.Helpers;
+import in.lamiv.android.newsfeedfromatomservice.esport.HttpRequestHandler;
 
-public class eSportsDetailsDisplayActivity extends AppCompatActivity {
+public class eSportsDetailsDisplayActivity extends AppCompatActivity implements HttpRequestHandler.IHttpRequestHandler{
 
     private DetailFeed _detailFeed = new DetailFeed();
+    HttpRequestHandler httpRequestHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,34 +42,24 @@ public class eSportsDetailsDisplayActivity extends AppCompatActivity {
                 (_detailFeed.getUpdated()));
 
         if(_detailFeed.getIconURL() != null) {
-            getImage();
+            httpRequestHandler = new HttpRequestHandler();
+            httpRequestHandler.setListener(this);
+            httpRequestHandler.getImageFromURL(_detailFeed.getIconURL());
         }
     }
 
-    /**
-     * Method to get image from the URL
-     */
-    public void getImage() {
+    @Override
+    public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+        try {
+            ((ImageView) findViewById(R.id.imageViewIcon))
+                    .setImageBitmap(BitmapFactory.decodeByteArray(responseBody, 0, responseBody.length));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-        // Make RESTful webservice call using AsyncHttpClient object
-        AsyncHttpClient client = new AsyncHttpClient();
-        HttpEntity entity = null;
-        client.get(_detailFeed.getIconURL(), new AsyncHttpResponseHandler() {
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                try {
-                    ((ImageView) findViewById(R.id.imageViewIcon))
-                            .setImageBitmap(BitmapFactory.decodeByteArray(responseBody, 0, responseBody.length));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-            }
-        });
+    @Override
+    public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
     }
 
 }

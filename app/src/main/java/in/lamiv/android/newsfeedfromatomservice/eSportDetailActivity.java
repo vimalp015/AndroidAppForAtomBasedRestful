@@ -28,6 +28,7 @@ import cz.msebera.android.httpclient.Header;
 
 import in.lamiv.android.newsfeedfromatomservice.esport.DetailFeed;
 import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
+import in.lamiv.android.newsfeedfromatomservice.esport.HttpRequestHandler;
 import in.lamiv.android.newsfeedfromatomservice.esport.IndexFeed;
 import in.lamiv.android.newsfeedfromatomservice.esport.XMLPullParserHandler;
 import in.lamiv.android.newsfeedfromatomservice.esport.eSportContent;
@@ -38,12 +39,14 @@ import in.lamiv.android.newsfeedfromatomservice.esport.eSportContent;
  * item details are presented side-by-side with a list of items
  * in a {@link eSportListActivity}.
  */
-public class eSportDetailActivity extends AppCompatActivity {
+public class eSportDetailActivity extends AppCompatActivity implements HttpRequestHandler.IHttpRequestHandler {
 
     // Progress Dialog Object
     ProgressDialog prgDialog;
     //var to hold values passed from eSports list on selection
     IndexFeed _indexFeed = new IndexFeed();
+
+    HttpRequestHandler httpRequestHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +99,10 @@ public class eSportDetailActivity extends AppCompatActivity {
             ((RecyclerView) recyclerView).setAdapter(new eSportDetailActivity.SimpleItemRecyclerViewAdapter(items));
         }
         else {
-            invokeWS();
+            prgDialog.show();
+            httpRequestHandler = new HttpRequestHandler();
+            httpRequestHandler.setListener(this);
+            httpRequestHandler.invokeWS(eSportDetailActivity.this, _indexFeed.getHref());
         }
     }
 
@@ -165,54 +171,30 @@ public class eSportDetailActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Method that performs RESTful webservice invocations
-     */
-    public void invokeWS() {
-        // Show Progress Dialog
-        prgDialog.show();
-        String stringURL = _indexFeed.getHref();
+    @Override
+    public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+        // Hide Progress Dialog
+        prgDialog.hide();
+        List<DetailFeed> items;
+        try {
+            InputStream inputStream = new ByteArrayInputStream(responseBody);
+            items = new XMLPullParserHandler().parseDetailFeed(inputStream);
+            inputStream.close();
+            View recyclerView = findViewById(R.id.esport_list);
+            assert recyclerView != null;
+            ((RecyclerView) recyclerView).setAdapter(new eSportDetailActivity.SimpleItemRecyclerViewAdapter(items));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //add the result to our static object for any further access
+        eSportContent.addItem(new eSportContent.eSportItem(_indexFeed.getId(), _indexFeed.getTitle(),
+                _indexFeed.getHref(), responseBody));
+    }
 
-        // Make RESTful webservice call using AsyncHttpClient object
-        AsyncHttpClient client = new AsyncHttpClient();
-        client.get(stringURL, new AsyncHttpResponseHandler() {
-            List<DetailFeed> items;
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                try {
-                    InputStream inputStream = new ByteArrayInputStream(responseBody);
-                    items = new XMLPullParserHandler().parseDetailFeed(inputStream);
-                    inputStream.close();
-                    View recyclerView = findViewById(R.id.esport_list);
-                    assert recyclerView != null;
-                    ((RecyclerView) recyclerView).setAdapter(new eSportDetailActivity.SimpleItemRecyclerViewAdapter(items));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                // Hide Progress Dialog
-                prgDialog.hide();
-                //add the result to our static object for any further access
-                eSportContent.addItem(new eSportContent.eSportItem(_indexFeed.getId(), _indexFeed.getTitle(),
-                        _indexFeed.getHref(), responseBody));
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                // Hide Progress Dialog
-                prgDialog.hide();
-                //show an alert to the user about the request failure
-                new AlertDialog.Builder(eSportDetailActivity.this)
-                        .setTitle(GlobalVars.ALERT_TITLE)
-                        .setMessage(GlobalVars.ALERT_MESSAGE_SERVER_CON_ISSUE)
-                        .setCancelable(false)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                            }
-                        }).create().show();
-            }
-        });
+    @Override
+    public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+        // Hide Progress Dialog
+        prgDialog.hide();
     }
     
 }

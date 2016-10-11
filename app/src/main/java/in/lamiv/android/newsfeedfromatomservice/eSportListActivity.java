@@ -22,6 +22,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import cz.msebera.android.httpclient.Header;
 
 import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
+import in.lamiv.android.newsfeedfromatomservice.esport.HttpRequestHandler;
 import in.lamiv.android.newsfeedfromatomservice.esport.IndexFeed;
 import in.lamiv.android.newsfeedfromatomservice.esport.XMLPullParserHandler;
 import in.lamiv.android.newsfeedfromatomservice.esport.eSportContent;
@@ -38,7 +39,7 @@ import java.util.List;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class eSportListActivity extends AppCompatActivity {
+public class eSportListActivity extends AppCompatActivity implements HttpRequestHandler.IHttpRequestHandler {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -48,6 +49,8 @@ public class eSportListActivity extends AppCompatActivity {
 
     // Progress Dialog Object
     ProgressDialog prgDialog;
+
+    HttpRequestHandler httpRequestHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +71,11 @@ public class eSportListActivity extends AppCompatActivity {
 
         //invoke feed request only if the required item is missing from our static object
         if (eSportContent.ITEMS == null || eSportContent.ITEMS.size() == 0) {
-            invokeWS();
+            prgDialog.show();
+            httpRequestHandler = new HttpRequestHandler();
+            httpRequestHandler.setListener(this);
+            httpRequestHandler.invokeWS(eSportListActivity.this, GlobalVars.ENTRY_URL);
+            httpRequestHandler = null;
         } else {
             View recyclerView = findViewById(R.id.esport_list);
             assert recyclerView != null;
@@ -80,7 +87,11 @@ public class eSportListActivity extends AppCompatActivity {
     }
 
     public void refreshOnClick(View view) {
-        invokeWS();
+        prgDialog.show();
+        httpRequestHandler = new HttpRequestHandler();
+        httpRequestHandler.setListener(this);
+        httpRequestHandler.invokeWS(eSportListActivity.this, GlobalVars.ENTRY_URL);
+        httpRequestHandler = null;
     }
 
     public class SimpleItemRecyclerViewAdapter
@@ -155,53 +166,30 @@ public class eSportListActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Method that performs RESTful webservice invocations
-     */
-    public void invokeWS() {
-        // Show Progress Dialog
-        prgDialog.show();
-        // Make RESTful webservice call using AsyncHttpClient object
-        AsyncHttpClient client = new AsyncHttpClient();
-        client.get(GlobalVars.ENTRY_URL, new AsyncHttpResponseHandler() {
-
-            List<eSportContent.eSportItem> items;
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                try {
-                    InputStream inputStream = new ByteArrayInputStream(responseBody);
-                    items = new XMLPullParserHandler().parseIndexFeed(inputStream);
-                    eSportContent.addItems(items);
-                    inputStream.close();
-                    View recyclerView = findViewById(R.id.esport_list);
-                    assert recyclerView != null;
-                    ((RecyclerView) recyclerView).setAdapter(new SimpleItemRecyclerViewAdapter(items));
-                    if (findViewById(R.id.esport_detail_container) != null) {
-                        mTwoPane = true;
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                // Hide Progress Dialog
-                prgDialog.hide();
+    @Override
+    public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+        List<eSportContent.eSportItem> items;
+        try {
+            InputStream inputStream = new ByteArrayInputStream(responseBody);
+            items = new XMLPullParserHandler().parseIndexFeed(inputStream);
+            eSportContent.addItems(items);
+            inputStream.close();
+            View recyclerView = findViewById(R.id.esport_list);
+            assert recyclerView != null;
+            ((RecyclerView) recyclerView).setAdapter(new SimpleItemRecyclerViewAdapter(items));
+            if (findViewById(R.id.esport_detail_container) != null) {
+                mTwoPane = true;
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // Hide Progress Dialog
+        prgDialog.hide();
+    }
 
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                // Hide Progress Dialog
-                prgDialog.hide();
-                //show an alert to the user about the request failure
-                new AlertDialog.Builder(eSportListActivity.this)
-                        .setTitle(GlobalVars.ALERT_TITLE)
-                        .setMessage(GlobalVars.ALERT_MESSAGE_SERVER_CON_ISSUE)
-                        .setCancelable(false)
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                            }
-                        }).create().show();
-            }
-        });
+    @Override
+    public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+        // Hide Progress Dialog
+        prgDialog.hide();
     }
 }
