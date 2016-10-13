@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".eSportListActivity"
+            android:name=".ESportListActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -21,16 +21,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".eSportDetailActivity"
+            android:name=".ESportDetailActivity"
             android:label="@string/title_esport_detail"
-            android:parentActivityName=".eSportListActivity"
+            android:parentActivityName=".ESportListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="in.lamiv.android.newsfeedfromatomservice.eSportListActivity" />
+                android:value="in.lamiv.android.newsfeedfromatomservice.ESportListActivity" />
         </activity>
         <activity
-            android:name=".eSportsDetailsDisplayActivity"
+            android:name=".ESportsDetailsDisplayActivity"
                 android:label="@string/title_esport_detail">
 
         </activity>

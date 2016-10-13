@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="in.lamiv.android.newsfeedfromatomservice.eSportListActivity">
+    tools:context="in.lamiv.android.newsfeedfromatomservice.ESportListActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/app_bar"
@@ -28,6 +28,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <Button
+            android:id="@+id/refreshButton"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
             android:text="@string/refresh"

@@ -26,21 +26,21 @@ import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
 import in.lamiv.android.newsfeedfromatomservice.esport.HttpRequestHandler;
 import in.lamiv.android.newsfeedfromatomservice.esport.IndexFeed;
 import in.lamiv.android.newsfeedfromatomservice.esport.XMLPullParserHandler;
-import in.lamiv.android.newsfeedfromatomservice.esport.eSportContent;
+import in.lamiv.android.newsfeedfromatomservice.esport.ESportContent;
 
 /**
  * An activity representing a single eSport detail screen. This
  * activity is only used narrow width devices. On tablet-size devices,
  * item details are presented side-by-side with a list of items
- * in a {@link eSportListActivity}.
+ * in a {@link ESportListActivity}.
  */
-public class eSportDetailActivity extends AppCompatActivity implements HttpRequestHandler.IHttpRequestHandler {
+public class ESportDetailActivity extends AppCompatActivity implements HttpRequestHandler.IHttpRequestHandler {
 
     // Progress Dialog Object
-    ProgressDialog prgDialog;
+    private ProgressDialog prgDialog;
     //var to hold values passed from eSports list on selection
-    IndexFeed _indexFeed = new IndexFeed();
-    HttpRequestHandler httpRequestHandler;
+    private IndexFeed _indexFeed = new IndexFeed();
+    private HttpRequestHandler httpRequestHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +74,7 @@ public class eSportDetailActivity extends AppCompatActivity implements HttpReque
                 //and to display title on the screen
                 Bundle arguments = new Bundle();
                 arguments.putParcelable(GlobalVars.ARG_INDEX_FEED, _indexFeed);
-                eSportDetailFragment fragment = new eSportDetailFragment();
+                ESportDetailFragment fragment = new ESportDetailFragment();
                 fragment.setArguments(arguments);
                 getSupportFragmentManager().beginTransaction()
                         .add(R.id.esport_detail_container, fragment)
@@ -82,18 +82,18 @@ public class eSportDetailActivity extends AppCompatActivity implements HttpReque
             }
 
             //verify if the eSport details to be fetched is already in our static object
-            if (eSportContent.HASH.containsKey(_indexFeed.getId())
-                    && eSportContent.HASH.get(_indexFeed.getId()).details != null) {
-                InputStream inputStream = new ByteArrayInputStream(eSportContent.HASH.get(_indexFeed.getId()).details);
+            if (ESportContent.HASH.containsKey(_indexFeed.getId())
+                    && ESportContent.HASH.get(_indexFeed.getId()).details != null) {
+                InputStream inputStream = new ByteArrayInputStream(ESportContent.HASH.get(_indexFeed.getId()).details);
                 List<DetailFeed> items = new XMLPullParserHandler().parseDetailFeed(inputStream);
                 View recyclerView = findViewById(R.id.esport_list);
                 assert recyclerView != null;
-                ((RecyclerView) recyclerView).setAdapter(new eSportDetailActivity.SimpleItemRecyclerViewAdapter(items));
+                ((RecyclerView) recyclerView).setAdapter(new ESportDetailActivity.SimpleItemRecyclerViewAdapter(items));
             } else {
                 prgDialog.show();
                 httpRequestHandler = new HttpRequestHandler();
                 httpRequestHandler.setListener(this);
-                httpRequestHandler.invokeWS(new WeakReference<AppCompatActivity>(eSportDetailActivity.this),
+                httpRequestHandler.invokeWS(new WeakReference<AppCompatActivity>(ESportDetailActivity.this),
                         _indexFeed.getHref());
             }
         }
@@ -103,7 +103,7 @@ public class eSportDetailActivity extends AppCompatActivity implements HttpReque
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            navigateUpTo(new Intent(this, eSportListActivity.class));
+            navigateUpTo(new Intent(this, ESportListActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -111,7 +111,7 @@ public class eSportDetailActivity extends AppCompatActivity implements HttpReque
 
     //Load the values fetched from REST service to UI
     public class SimpleItemRecyclerViewAdapter
-            extends RecyclerView.Adapter<eSportDetailActivity.SimpleItemRecyclerViewAdapter.ViewHolder> {
+            extends RecyclerView.Adapter<ESportDetailActivity.SimpleItemRecyclerViewAdapter.ViewHolder> {
 
         private final List<DetailFeed> mValues;
 
@@ -120,14 +120,14 @@ public class eSportDetailActivity extends AppCompatActivity implements HttpReque
         }
 
         @Override
-        public eSportDetailActivity.SimpleItemRecyclerViewAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public ESportDetailActivity.SimpleItemRecyclerViewAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.esport_list_content, parent, false);
-            return new eSportDetailActivity.SimpleItemRecyclerViewAdapter.ViewHolder(view);
+            return new ESportDetailActivity.SimpleItemRecyclerViewAdapter.ViewHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(final eSportDetailActivity.SimpleItemRecyclerViewAdapter.ViewHolder holder, int position) {
+        public void onBindViewHolder(final ESportDetailActivity.SimpleItemRecyclerViewAdapter.ViewHolder holder, int position) {
             holder.mItem = mValues.get(position);
             holder.mContentView.setText(mValues.get(position).getText());
 
@@ -135,7 +135,7 @@ public class eSportDetailActivity extends AppCompatActivity implements HttpReque
                 @Override
                 public void onClick(View v) {
                     Context context = v.getContext();
-                    Intent intent = new Intent(context, eSportsDetailsDisplayActivity.class);
+                    Intent intent = new Intent(context, ESportsDetailsDisplayActivity.class);
                     intent.putExtra(GlobalVars.ARG_DETAILS_FEED, holder.mItem);
                     context.startActivity(intent);
                 }
@@ -176,12 +176,12 @@ public class eSportDetailActivity extends AppCompatActivity implements HttpReque
             inputStream.close();
             View recyclerView = findViewById(R.id.esport_list);
             assert recyclerView != null;
-            ((RecyclerView) recyclerView).setAdapter(new eSportDetailActivity.SimpleItemRecyclerViewAdapter(items));
+            ((RecyclerView) recyclerView).setAdapter(new ESportDetailActivity.SimpleItemRecyclerViewAdapter(items));
         } catch (Exception e) {
             e.printStackTrace();
         }
         //add the result to our static object for any further access
-        eSportContent.addItem(new eSportContent.eSportItem(_indexFeed.getId(), _indexFeed.getTitle(),
+        ESportContent.addItem(new ESportContent.eSportItem(_indexFeed.getId(), _indexFeed.getTitle(),
                 _indexFeed.getHref(), responseBody));
         httpRequestHandler = null;
     }

@@ -13,10 +13,9 @@ import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
 import in.lamiv.android.newsfeedfromatomservice.esport.Helpers;
 import in.lamiv.android.newsfeedfromatomservice.esport.HttpRequestHandler;
 
-public class eSportsDetailsDisplayActivity extends AppCompatActivity implements HttpRequestHandler.IHttpRequestHandler{
+public class ESportsDetailsDisplayActivity extends AppCompatActivity implements HttpRequestHandler.IHttpRequestHandler{
 
-    private DetailFeed _detailFeed = new DetailFeed();
-    HttpRequestHandler httpRequestHandler;
+    private HttpRequestHandler httpRequestHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +24,7 @@ public class eSportsDetailsDisplayActivity extends AppCompatActivity implements 
 
         Bundle data = getIntent().getExtras();
         if(data.containsKey(GlobalVars.ARG_DETAILS_FEED)) {
-            _detailFeed = (DetailFeed) data.getParcelable(GlobalVars.ARG_DETAILS_FEED);
+            DetailFeed _detailFeed = (DetailFeed) data.getParcelable(GlobalVars.ARG_DETAILS_FEED);
 
             //set the title of the screen to the eSport title selected from the list
             setTitle(GlobalVars.ENTRIES + ": " + _detailFeed.getText());

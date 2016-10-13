@@ -20,7 +20,7 @@ import cz.msebera.android.httpclient.HttpEntity;
  */
 
 public class HttpRequestHandler {
-    IHttpRequestHandler iHttpRequestHandler;
+    private IHttpRequestHandler iHttpRequestHandler;
 
     //Delegate for callback methods
     public interface IHttpRequestHandler {
@@ -45,10 +45,7 @@ public class HttpRequestHandler {
      * Method that performs RESTful webservice invocations
      * Pass WeakReference to avoid any memory leak
      */
-    public void invokeWS(final WeakReference<AppCompatActivity> activity, String url) {
-        String stringURL = url;
-        //AppCompatActivity _activity = activity;
-
+    public void invokeWS(final WeakReference<AppCompatActivity> activity, String stringURL) {
         // Make RESTful webservice call using AsyncHttpClient object
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(stringURL, new AsyncHttpResponseHandler() {

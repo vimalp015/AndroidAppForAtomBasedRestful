@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class eSportContent {
+public class ESportContent {
 
     public static List<eSportItem> ITEMS = new ArrayList<eSportItem>();
     public static HashMap<String, eSportItem> HASH = new HashMap<>();

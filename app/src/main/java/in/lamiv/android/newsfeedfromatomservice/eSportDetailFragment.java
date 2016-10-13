@@ -13,13 +13,13 @@ import in.lamiv.android.newsfeedfromatomservice.esport.IndexFeed;
 
 /**
  * A fragment representing a single eSport detail screen.
- * This fragment is either contained in a {@link eSportListActivity}
- * in two-pane mode (on tablets) or a {@link eSportDetailActivity}
+ * This fragment is either contained in a {@link ESportListActivity}
+ * in two-pane mode (on tablets) or a {@link ESportDetailActivity}
  * on handsets.
  */
-public class eSportDetailFragment extends Fragment {
+public class ESportDetailFragment extends Fragment {
 
-    public eSportDetailFragment() {
+    public ESportDetailFragment() {
     }
 
     @Override
@@ -39,8 +39,6 @@ public class eSportDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.esport_detail, container, false);
-
-        return rootView;
+        return inflater.inflate(R.layout.esport_detail, container, false);
     }
 }

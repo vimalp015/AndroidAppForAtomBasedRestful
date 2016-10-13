@@ -18,7 +18,7 @@ import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
 import in.lamiv.android.newsfeedfromatomservice.esport.HttpRequestHandler;
 import in.lamiv.android.newsfeedfromatomservice.esport.IndexFeed;
 import in.lamiv.android.newsfeedfromatomservice.esport.XMLPullParserHandler;
-import in.lamiv.android.newsfeedfromatomservice.esport.eSportContent;
+import in.lamiv.android.newsfeedfromatomservice.esport.ESportContent;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -29,19 +29,19 @@ import java.util.List;
  * An activity representing a list of eSports. This activity
  * has different presentations for handset and tablet-size devices. On
  * handsets, the activity presents a list of items, which when touched,
- * lead to a {@link eSportDetailActivity} representing
+ * lead to a {@link ESportDetailActivity} representing
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class eSportListActivity extends AppCompatActivity implements HttpRequestHandler.IHttpRequestHandler {
+public class ESportListActivity extends AppCompatActivity implements HttpRequestHandler.IHttpRequestHandler {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
     private boolean mTwoPane;
-    ProgressDialog prgDialog;
-    HttpRequestHandler httpRequestHandler;
+    private ProgressDialog prgDialog;
+    private HttpRequestHandler httpRequestHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,16 +61,16 @@ public class eSportListActivity extends AppCompatActivity implements HttpRequest
         prgDialog.setCancelable(false);
 
         //invoke feed request only if the required item is missing from our static object
-        if (eSportContent.ITEMS == null || eSportContent.ITEMS.size() == 0) {
+        if (ESportContent.ITEMS == null || ESportContent.ITEMS.size() == 0) {
             prgDialog.show();
             httpRequestHandler = new HttpRequestHandler();
             httpRequestHandler.setListener(this);
-            httpRequestHandler.invokeWS(new WeakReference<AppCompatActivity>(eSportListActivity.this),
+            httpRequestHandler.invokeWS(new WeakReference<AppCompatActivity>(ESportListActivity.this),
                     GlobalVars.ENTRY_URL);
         } else {
             View recyclerView = findViewById(R.id.esport_list);
             assert recyclerView != null;
-            ((RecyclerView) recyclerView).setAdapter(new SimpleItemRecyclerViewAdapter(eSportContent.ITEMS));
+            ((RecyclerView) recyclerView).setAdapter(new SimpleItemRecyclerViewAdapter(ESportContent.ITEMS));
             if (findViewById(R.id.esport_detail_container) != null) {
                 mTwoPane = true;
             }
@@ -81,7 +81,7 @@ public class eSportListActivity extends AppCompatActivity implements HttpRequest
         prgDialog.show();
         httpRequestHandler = new HttpRequestHandler();
         httpRequestHandler.setListener(this);
-        httpRequestHandler.invokeWS(new WeakReference<AppCompatActivity>(eSportListActivity.this),
+        httpRequestHandler.invokeWS(new WeakReference<AppCompatActivity>(ESportListActivity.this),
                 GlobalVars.ENTRY_URL);
     }
 
@@ -89,9 +89,9 @@ public class eSportListActivity extends AppCompatActivity implements HttpRequest
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
-        private final List<eSportContent.eSportItem> mValues;
+        private final List<ESportContent.eSportItem> mValues;
 
-        public SimpleItemRecyclerViewAdapter(List<eSportContent.eSportItem> items) {
+        public SimpleItemRecyclerViewAdapter(List<ESportContent.eSportItem> items) {
             mValues = items;
         }
 
@@ -118,14 +118,14 @@ public class eSportListActivity extends AppCompatActivity implements HttpRequest
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
                         arguments.putParcelable(GlobalVars.ARG_INDEX_FEED, indexFeed);
-                        eSportDetailFragment fragment = new eSportDetailFragment();
+                        ESportDetailFragment fragment = new ESportDetailFragment();
                         fragment.setArguments(arguments);
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.esport_detail_container, fragment)
                                 .commit();
                     } else {
                         Context context = v.getContext();
-                        Intent intent = new Intent(context, eSportDetailActivity.class);
+                        Intent intent = new Intent(context, ESportDetailActivity.class);
                         intent.putExtra(GlobalVars.ARG_INDEX_FEED, indexFeed);
                         context.startActivity(intent);
                     }
@@ -142,7 +142,7 @@ public class eSportListActivity extends AppCompatActivity implements HttpRequest
             public final View mView;
             //            public final TextView mIdView;
             public final TextView mContentView;
-            public eSportContent.eSportItem mItem;
+            public ESportContent.eSportItem mItem;
 
             public ViewHolder(View view) {
                 super(view);
@@ -160,11 +160,11 @@ public class eSportListActivity extends AppCompatActivity implements HttpRequest
 
     @Override
     public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-        List<eSportContent.eSportItem> items;
+        List<ESportContent.eSportItem> items;
         try {
             InputStream inputStream = new ByteArrayInputStream(responseBody);
             items = new XMLPullParserHandler().parseIndexFeed(inputStream);
-            eSportContent.addItems(items);
+            ESportContent.addItems(items);
             inputStream.close();
             View recyclerView = findViewById(R.id.esport_list);
             assert recyclerView != null;

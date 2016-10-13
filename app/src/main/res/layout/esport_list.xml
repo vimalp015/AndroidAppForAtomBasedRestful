@@ -10,5 +10,5 @@
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
     app:layoutManager="LinearLayoutManager"
-    tools:context="in.lamiv.android.newsfeedfromatomservice.eSportListActivity"
+    tools:context="in.lamiv.android.newsfeedfromatomservice.ESportListActivity"
     tools:listitem="@layout/esport_list_content" />

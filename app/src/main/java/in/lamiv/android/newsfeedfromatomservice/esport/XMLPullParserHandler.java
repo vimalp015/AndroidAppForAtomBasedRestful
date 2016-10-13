@@ -15,21 +15,18 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 public class XMLPullParserHandler {
 
-    private IndexFeed eSport;
-    private DetailFeed detailFeed;
-
     //method to parse initial atom feed with list of all eSports and link to it
-    public List<eSportContent.eSportItem> parseIndexFeed(InputStream is) {
+    public List<ESportContent.eSportItem> parseIndexFeed(InputStream is) {
         XmlPullParserFactory factory = null;
         XmlPullParser parser = null;
-        eSportContent.ITEMS = new ArrayList<eSportContent.eSportItem>();
+        ESportContent.ITEMS = new ArrayList<ESportContent.eSportItem>();
 
         String text = null;
 
         try {
             factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
-            eSport = new IndexFeed();
+            IndexFeed eSport = new IndexFeed();
 
             parser = factory.newPullParser();
             parser.setInput(is, null);
@@ -47,7 +44,7 @@ public class XMLPullParserHandler {
                         break;
                     case XmlPullParser.END_TAG:
                         if(tagname.equalsIgnoreCase("collection")) {
-                            eSportContent.ITEMS.add(new eSportContent.eSportItem
+                            ESportContent.ITEMS.add(new ESportContent.eSportItem
                                     (eSport.getId(),eSport.getTitle(),eSport.getHref(), null));
                         } else if (tagname.equalsIgnoreCase("id")) {
                             eSport.setId(text);
@@ -63,7 +60,7 @@ public class XMLPullParserHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return eSportContent.ITEMS;
+        return ESportContent.ITEMS;
     }
 
     //method to parse atom feed on selected eSports detail
@@ -76,7 +73,7 @@ public class XMLPullParserHandler {
         try {
             factory = XmlPullParserFactory.newInstance();
             factory.setNamespaceAware(true);
-            detailFeed = new DetailFeed();
+            DetailFeed detailFeed = new DetailFeed();
 
             parser = factory.newPullParser();
             parser.setInput(is, null);
