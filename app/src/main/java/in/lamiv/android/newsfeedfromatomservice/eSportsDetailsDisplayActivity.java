@@ -6,11 +6,8 @@ import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-
 import cz.msebera.android.httpclient.Header;
-import cz.msebera.android.httpclient.HttpEntity;
+
 import in.lamiv.android.newsfeedfromatomservice.esport.DetailFeed;
 import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
 import in.lamiv.android.newsfeedfromatomservice.esport.Helpers;
@@ -29,22 +26,22 @@ public class eSportsDetailsDisplayActivity extends AppCompatActivity implements 
         Bundle data = getIntent().getExtras();
         if(data.containsKey(GlobalVars.ARG_DETAILS_FEED)) {
             _detailFeed = (DetailFeed) data.getParcelable(GlobalVars.ARG_DETAILS_FEED);
-        }
 
-        //set the title of the screen to the eSport title selected from the list
-        setTitle(GlobalVars.ENTRIES + ": " + _detailFeed.getText());
+            //set the title of the screen to the eSport title selected from the list
+            setTitle(GlobalVars.ENTRIES + ": " + _detailFeed.getText());
 
-        //set values to the controls to be displayed for the user
-        ((TextView)findViewById(R.id.details_text)).setText(_detailFeed.getText());
-        ((TextView)findViewById(R.id.details_summary)).setText(_detailFeed.getSummary());
-        ((TextView)findViewById(R.id.details_rights)).setText(_detailFeed.getRights());
-        ((TextView)findViewById(R.id.details_updated)).setText(Helpers.ParseDateToStringForDisplay
-                (_detailFeed.getUpdated()));
+            //set values to the controls to be displayed for the user
+            ((TextView) findViewById(R.id.details_text)).setText(_detailFeed.getText());
+            ((TextView) findViewById(R.id.details_summary)).setText(_detailFeed.getSummary());
+            ((TextView) findViewById(R.id.details_rights)).setText(_detailFeed.getRights());
+            ((TextView) findViewById(R.id.details_updated)).setText(Helpers.ParseDateToStringForDisplay
+                    (_detailFeed.getUpdated()));
 
-        if(_detailFeed.getIconURL() != null) {
-            httpRequestHandler = new HttpRequestHandler();
-            httpRequestHandler.setListener(this);
-            httpRequestHandler.getImageFromURL(_detailFeed.getIconURL());
+            if (_detailFeed.getIconURL() != null) {
+                httpRequestHandler = new HttpRequestHandler();
+                httpRequestHandler.setListener(this);
+                httpRequestHandler.getImageFromURL(_detailFeed.getIconURL());
+            }
         }
     }
 
@@ -56,10 +53,11 @@ public class eSportsDetailsDisplayActivity extends AppCompatActivity implements 
         } catch (Exception e) {
             e.printStackTrace();
         }
+        httpRequestHandler = null;
     }
 
     @Override
     public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+        httpRequestHandler = null;
     }
-
 }

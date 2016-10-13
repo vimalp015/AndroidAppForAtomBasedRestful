@@ -2,11 +2,8 @@ package in.lamiv.android.newsfeedfromatomservice;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -15,10 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-//Android Asynchronous Http Client – An asynchronous callback-based Http client
-// for Android built on top of Apache’s HttpClient libraries which is used by Pinterest, Instagram etc.,
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import cz.msebera.android.httpclient.Header;
 
 import in.lamiv.android.newsfeedfromatomservice.esport.GlobalVars;
@@ -29,6 +22,7 @@ import in.lamiv.android.newsfeedfromatomservice.esport.eSportContent;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 /**
@@ -46,10 +40,7 @@ public class eSportListActivity extends AppCompatActivity implements HttpRequest
      * device.
      */
     private boolean mTwoPane;
-
-    // Progress Dialog Object
     ProgressDialog prgDialog;
-
     HttpRequestHandler httpRequestHandler;
 
     @Override
@@ -74,8 +65,8 @@ public class eSportListActivity extends AppCompatActivity implements HttpRequest
             prgDialog.show();
             httpRequestHandler = new HttpRequestHandler();
             httpRequestHandler.setListener(this);
-            httpRequestHandler.invokeWS(eSportListActivity.this, GlobalVars.ENTRY_URL);
-            httpRequestHandler = null;
+            httpRequestHandler.invokeWS(new WeakReference<AppCompatActivity>(eSportListActivity.this),
+                    GlobalVars.ENTRY_URL);
         } else {
             View recyclerView = findViewById(R.id.esport_list);
             assert recyclerView != null;
@@ -90,10 +81,11 @@ public class eSportListActivity extends AppCompatActivity implements HttpRequest
         prgDialog.show();
         httpRequestHandler = new HttpRequestHandler();
         httpRequestHandler.setListener(this);
-        httpRequestHandler.invokeWS(eSportListActivity.this, GlobalVars.ENTRY_URL);
-        httpRequestHandler = null;
+        httpRequestHandler.invokeWS(new WeakReference<AppCompatActivity>(eSportListActivity.this),
+                GlobalVars.ENTRY_URL);
     }
 
+    //Load the values fetched from REST service to the UI
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
@@ -185,11 +177,13 @@ public class eSportListActivity extends AppCompatActivity implements HttpRequest
         }
         // Hide Progress Dialog
         prgDialog.hide();
+        httpRequestHandler = null;
     }
 
     @Override
     public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
         // Hide Progress Dialog
         prgDialog.hide();
+        httpRequestHandler = null;
     }
 }

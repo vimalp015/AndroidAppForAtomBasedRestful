@@ -2,10 +2,8 @@ package in.lamiv.android.newsfeedfromatomservice;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -18,12 +16,9 @@ import android.widget.TextView;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.List;
 
-//Android Asynchronous Http Client – An asynchronous callback-based Http client
-// for Android built on top of Apache’s HttpClient libraries which is used by Pinterest, Instagram etc.,
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import cz.msebera.android.httpclient.Header;
 
 import in.lamiv.android.newsfeedfromatomservice.esport.DetailFeed;
@@ -45,7 +40,6 @@ public class eSportDetailActivity extends AppCompatActivity implements HttpReque
     ProgressDialog prgDialog;
     //var to hold values passed from eSports list on selection
     IndexFeed _indexFeed = new IndexFeed();
-
     HttpRequestHandler httpRequestHandler;
 
     @Override
@@ -55,54 +49,53 @@ public class eSportDetailActivity extends AppCompatActivity implements HttpReque
         Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         setSupportActionBar(toolbar);
 
-        // Instantiate Progress Dialog object
-        prgDialog = new ProgressDialog(this);
-        // Set Progress Dialog Text
-        prgDialog.setMessage(GlobalVars.PLEASE_WAIT_MESSAGE);
-        // Set Cancelable as False
-        prgDialog.setCancelable(false);
-
-        // Show the Up button in the action bar.
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-
-
         Bundle data = getIntent().getExtras();
         if(data.containsKey(GlobalVars.ARG_INDEX_FEED)) {
             _indexFeed = (IndexFeed) data.getParcelable(GlobalVars.ARG_INDEX_FEED);
-        }
 
-        this.setTitle(GlobalVars.SOURCES_LIST +": " + _indexFeed.getTitle());
+            // Instantiate Progress Dialog object
+            prgDialog = new ProgressDialog(this);
+            // Set Progress Dialog Text
+            prgDialog.setMessage(GlobalVars.PLEASE_WAIT_MESSAGE);
+            // Set Cancelable as False
+            prgDialog.setCancelable(false);
 
-        if (savedInstanceState == null) {
-            // Create the detail fragment and add it to the activity
-            // using a fragment transaction. You need the below params to fetch feed with the ID
-            //and to display title on the screen
-            Bundle arguments = new Bundle();
-            arguments.putParcelable(GlobalVars.ARG_INDEX_FEED, _indexFeed);
-            eSportDetailFragment fragment = new eSportDetailFragment();
-            fragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.esport_detail_container, fragment)
-                    .commit();
-        }
+            // Show the Up button in the action bar.
+            ActionBar actionBar = getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.setDisplayHomeAsUpEnabled(true);
+            }
 
-        //verify if the eSport details to be fetched is already in our static object
-        if(eSportContent.HASH.containsKey(_indexFeed.getId())
-                && eSportContent.HASH.get(_indexFeed.getId()).details != null) {
-            InputStream inputStream = new ByteArrayInputStream(eSportContent.HASH.get(_indexFeed.getId()).details);
-            List<DetailFeed> items = new XMLPullParserHandler().parseDetailFeed(inputStream);
-            View recyclerView = findViewById(R.id.esport_list);
-            assert recyclerView != null;
-            ((RecyclerView) recyclerView).setAdapter(new eSportDetailActivity.SimpleItemRecyclerViewAdapter(items));
-        }
-        else {
-            prgDialog.show();
-            httpRequestHandler = new HttpRequestHandler();
-            httpRequestHandler.setListener(this);
-            httpRequestHandler.invokeWS(eSportDetailActivity.this, _indexFeed.getHref());
+            this.setTitle(GlobalVars.SOURCES_LIST + ": " + _indexFeed.getTitle());
+
+            if (savedInstanceState == null) {
+                // Create the detail fragment and add it to the activity
+                // using a fragment transaction. You need the below params to fetch feed with the ID
+                //and to display title on the screen
+                Bundle arguments = new Bundle();
+                arguments.putParcelable(GlobalVars.ARG_INDEX_FEED, _indexFeed);
+                eSportDetailFragment fragment = new eSportDetailFragment();
+                fragment.setArguments(arguments);
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.esport_detail_container, fragment)
+                        .commit();
+            }
+
+            //verify if the eSport details to be fetched is already in our static object
+            if (eSportContent.HASH.containsKey(_indexFeed.getId())
+                    && eSportContent.HASH.get(_indexFeed.getId()).details != null) {
+                InputStream inputStream = new ByteArrayInputStream(eSportContent.HASH.get(_indexFeed.getId()).details);
+                List<DetailFeed> items = new XMLPullParserHandler().parseDetailFeed(inputStream);
+                View recyclerView = findViewById(R.id.esport_list);
+                assert recyclerView != null;
+                ((RecyclerView) recyclerView).setAdapter(new eSportDetailActivity.SimpleItemRecyclerViewAdapter(items));
+            } else {
+                prgDialog.show();
+                httpRequestHandler = new HttpRequestHandler();
+                httpRequestHandler.setListener(this);
+                httpRequestHandler.invokeWS(new WeakReference<AppCompatActivity>(eSportDetailActivity.this),
+                        _indexFeed.getHref());
+            }
         }
     }
 
@@ -116,6 +109,7 @@ public class eSportDetailActivity extends AppCompatActivity implements HttpReque
         return super.onOptionsItemSelected(item);
     }
 
+    //Load the values fetched from REST service to UI
     public class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<eSportDetailActivity.SimpleItemRecyclerViewAdapter.ViewHolder> {
 
@@ -189,12 +183,14 @@ public class eSportDetailActivity extends AppCompatActivity implements HttpReque
         //add the result to our static object for any further access
         eSportContent.addItem(new eSportContent.eSportItem(_indexFeed.getId(), _indexFeed.getTitle(),
                 _indexFeed.getHref(), responseBody));
+        httpRequestHandler = null;
     }
 
     @Override
     public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
         // Hide Progress Dialog
         prgDialog.hide();
+        httpRequestHandler = null;
     }
     
 }
